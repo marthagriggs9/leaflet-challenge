@@ -18,10 +18,10 @@ function createFeatures(earthquakeData) {
   //Create a GeoJSON layer containing the features array on the earthquakeData object
   function CreatCircleMarker(feature, latlng) {
     let options = {
-        radius: feature.properties.mag*5, 
-        fillColor: chooseColor(feature.properties.mag),
-        color: chooseColor(feature.properties.mag),
-        weight: 1,
+        radius: feature.properties.mag*4, 
+        fillColor: chooseColor(feature.geometry.coordinates[2]),
+        color: chooseColor(feature.geometry.coordinates[2]),
+        weight: 2,
         opacity: 0.8,
         fillOpacity: 0.35
     }
@@ -43,24 +43,47 @@ function createFeatures(earthquakeData) {
 //Data markers should reflect the magnitude of the earthquake by their size and the depth of the earthquake by color
 //Earthquakes with higher magnitudes should appear larger 
 //Earthquakes with greater depth should appear darker in color
-function chooseColor(mag) {
+function chooseColor(depth) {
     switch(true) {
-        case(1.0 <= mag && mag <= 2.5):
-            return "#0071BC"; // Strong blue
-        case (2.5 <= mag && mag <=4.0):
-            return "#35BC00";
-        case (4.0 <= mag && mag <=5.5):
-            return "#BCBC00";
-        case (5.5 <= mag && mag <= 8.0):
-            return "#BC3500";
-        case (8.0 <= mag && mag <=20.0):
-            return "#BC0000";
+        case depth > 90:
+            return "#bd0026"; // deep red
+        case depth > 70:
+            return "#f03b20";
+        case depth > 50:
+            return "#fd8d3c";
+        case depth > 30:
+            return "#feb24c";
+        case depth > 10:
+            return "fed976";
         default:
-            return "#E2FFAE";
+            return "#ffffb2";
     }
 }
 
+// Create map legend to provide context for map data
+let legend = L.control({position: 'bottomright'});
 
+legend.onAdd = function() {
+    var div = L.DomUtil.create('div', 'info legend');
+    var grades = [1.0, 2.5, 4.0, 5.5, 8.0];
+    var labels = [];
+    var legendInfo = "<h4>Magnitude</h4>";
+
+    div.innerHTML = legendInfo
+
+    // go through each magnitude item to label and color the legend squares
+    // push to labels array as list item
+    for (var i = 0; i < grades.length; i++) {
+          labels.push('<ul style="background-color:' + chooseColor(grades[i] + 1) + '"> <span>' + grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '' : '+') + '</span></ul>');
+        }
+
+      // add each label list item to the div under the <ul> tag
+      div.innerHTML += "<ul>" + labels.join("") + "</ul>";
+    
+    return div;
+  };
+
+//create map  
 function createMap(earthquakes) {
 
   // Create the base layers.
@@ -68,14 +91,14 @@ function createMap(earthquakes) {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   })
 
-  let topo = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
-  });
+  var WorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+});
 
   // Create a baseMaps object.
   let baseMaps = {
     "Street Map": street,
-    "Topographic Map": topo
+    "World Street Map": WorldStreetMap
   };
 
   // Create an overlay object to hold our overlay.
@@ -98,5 +121,6 @@ function createMap(earthquakes) {
   L.control.layers(baseMaps, overlayMaps, {
     collapsed: false
   }).addTo(myMap);
+  legend.addTo(myMap);
 
 }
