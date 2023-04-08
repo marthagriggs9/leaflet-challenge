@@ -99,14 +99,16 @@ function createMap(earthquakes) {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   })
 
-  var WorldStreetMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-	attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
+  var Stadia_AlidadeSmooth = L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png', {
+	maxZoom: 20,
+	attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>, &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
 });
+
 
   // Create a baseMaps object.
   let baseMaps = {
     "Street Map": street,
-    "World Street Map": WorldStreetMap
+    "Gray Street Map": Stadia_AlidadeSmooth
   };
 
   // Create an overlay object to hold our overlay.
@@ -120,7 +122,7 @@ function createMap(earthquakes) {
       37.09, -95.71
     ],
     zoom: 4.75,
-    layers: [street, earthquakes]
+    layers: [Stadia_AlidadeSmooth, earthquakes]
   });
 
   // Create a layer control.
