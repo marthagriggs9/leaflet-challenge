@@ -12,13 +12,13 @@ function createFeatures(earthquakeData) {
   // Define a function that we want to run once for each feature in the features array.
   // Give each feature a popup that describes the place and time of the earthquake.
   function onEachFeature(feature, layer) {
-    layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>${new Date(feature.properties.time)}</p><hr><p>Magnitude: ${feature.properties.mag}</p>`);
+    layer.bindPopup(`<h3>${feature.properties.place}</h3><hr><p>Magnitude: ${feature.properties.mag}</p><hr><p>Depth: ${feature.geometry.coordinates[2]}</p>`);
   }
 
   //Create a GeoJSON layer containing the features array on the earthquakeData object
   function CreatCircleMarker(feature, latlng) {
     let options = {
-        radius: feature.properties.mag*4, 
+        radius: markerSize(feature.properties.mag), 
         fillColor: chooseColor(feature.geometry.coordinates[2]),
         color: chooseColor(feature.geometry.coordinates[2]),
         weight: 2,
@@ -26,6 +26,14 @@ function createFeatures(earthquakeData) {
         fillOpacity: 0.35
     }
     return L.circleMarker(latlng, options);
+
+    function markerSize(mag) {
+        if (mag === 0) {
+            return 1;
+        }
+
+        return mag * 4.25;
+    }
   }
 
   // Create a variable for earthquakes to house latlng, each feature fo popup and circle 
@@ -46,17 +54,17 @@ function createFeatures(earthquakeData) {
 function chooseColor(depth) {
     switch(true) {
         case depth > 90:
-            return "#bd0026"; // deep red
+            return "#cb181d"; 
         case depth > 70:
-            return "#f03b20";
+            return "#e31a1c";
         case depth > 50:
-            return "#fd8d3c";
+            return "#fc4e2a";
         case depth > 30:
-            return "#feb24c";
+            return "#fd8d3c";
         case depth > 10:
-            return "fed976";
+            return "#feb24c";
         default:
-            return "#ffffb2";
+            return "#fed976";
     }
 }
 
@@ -65,9 +73,9 @@ let legend = L.control({position: 'bottomright'});
 
 legend.onAdd = function() {
     var div = L.DomUtil.create('div', 'info legend');
-    var grades = [1.0, 2.5, 4.0, 5.5, 8.0];
+    var grades = [-10, 10, 30, 50, 70, 90];
     var labels = [];
-    var legendInfo = "<h4>Magnitude</h4>";
+    var legendInfo = "<h4>Earthquake Depth</h4>";
 
     div.innerHTML = legendInfo
 
@@ -111,7 +119,7 @@ function createMap(earthquakes) {
     center: [
       37.09, -95.71
     ],
-    zoom: 5,
+    zoom: 4.75,
     layers: [street, earthquakes]
   });
 
